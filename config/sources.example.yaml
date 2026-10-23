@@ -1,0 +1,44 @@
+# Configuración de una curación. Copia este fichero a config/local-<sistema>.yaml (ignorado por git) y ajusta las rutas.
+# Las rutas relativas se resuelven desde la carpeta de este fichero.
+
+sistema: mi-sistema                 # nombre corto; da nombre al repo OKF
+
+# Cómo llega el conocimiento al agente (ver METODOLOGIA.md, "Dos modos de entrega"):
+#   agente    el agente explora (clona los repos o lee ficheros de la KB con herramientas)   ← recomendado
+#   busqueda  el agente solo recibe trozos de un buscador (Foundry IQ sin lectura de ficheros) → añade fichas por componente
+modo: agente
+
+# Caso A: el agente NO puede clonar los repos, pero SÍ puede leer ficheros de la KB → el código se publica tal cual en la KB.
+exportar_codigo: false
+
+salida: ../salida/okf-mi-sistema     # carpeta del repo OKF (se crea con git); súbela a su propio repo
+trabajo: ../trabajo/mi-sistema       # registro de vigencia, preguntas al cliente (confirmaciones.md, respuestas.yaml), informes
+
+repos:
+  - name: servicio-x
+    path: /ruta/al/servicio-x
+    include: ["src/**/*.cs", "**/*.csproj", "*.sln", ".azure-pipelines/*.yml", "appsettings*.json"]
+    docs: ["README.md", "docs/**/*.md"]
+    exclude: ["**/appsettings.Development.json", "**/*.env", "**/secrets*"]
+    contexto: Una o dos frases de negocio para situar el repo.
+  - name: web-x
+    path: /ruta/al/web-x
+    include: ["src/**/*.ts", "src/**/*.html", "package.json", "angular.json"]
+    docs: ["README.md"]
+    exclude: ["**/environment.prod.ts"]
+    contexto: Frontend que consume servicio-x.
+
+# Qué repo llama a cuál: genera el índice de integración (qué componente atiende cada llamada).
+integraciones:
+  - consumidor: web-x
+    proveedor: servicio-x
+
+# Exports de Atlassian (una sola vez):
+jira: /ruta/al/export/jira.json              # REST API v3: {"issues": [...]} con fields (ADF) y changelog
+confluence: /ruta/al/export/confluence       # pages.json + pages/<id>.xml (storage format)
+
+# Modelos (opcional; estos son los valores por defecto):
+modelos:
+  redactor: gpt-5.4-mini                     # guías, índices, fichas
+  detectores: [claude-sonnet-5-5, gpt-5.5]   # registro de vigencia: dos modelos fuertes de familias distintas
+  fusion: claude-sonnet-5-5

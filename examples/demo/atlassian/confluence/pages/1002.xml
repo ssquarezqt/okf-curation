@@ -1,0 +1,1 @@
+<h1>Despliegue</h1><p>Se despliega función a función:</p><ac:structured-macro ac:name="code"><ac:parameter ac:name="language">bash</ac:parameter><ac:plain-text-body><![CDATA[./scripts/deploy.sh create_claim]]></ac:plain-text-body></ac:structured-macro>

@@ -1,0 +1,26 @@
+[
+ {
+  "id": "1001",
+  "title": "Reglas de aprobación de reclamaciones",
+  "version": 2,
+  "ancestors": [
+   "DEMO",
+   "Producto"
+  ],
+  "lastModified": "2026-07-01",
+  "labels": [
+   "reglas"
+  ]
+ },
+ {
+  "id": "1002",
+  "title": "Cómo desplegar el servicio",
+  "version": 1,
+  "ancestors": [
+   "DEMO",
+   "Operación"
+  ],
+  "lastModified": "2026-04-10",
+  "labels": []
+ }
+]

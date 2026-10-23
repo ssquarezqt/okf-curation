@@ -1,0 +1,11 @@
+.venv/
+__pycache__/
+*.pyc
+# salidas y trabajo intermedio: el repo OKF resultante vive en su propio repo
+salida/
+trabajo/
+eval/resultados/
+# claves y configuraciones con rutas locales
+*.env
+.env*
+config/local*.yaml

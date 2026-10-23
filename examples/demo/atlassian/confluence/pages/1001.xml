@@ -1,0 +1,1 @@
+<h1>Reglas de aprobación</h1><p>Una reclamación se aprueba automáticamente si el importe es menor o igual que <strong>250 €</strong> (<code>AUTO_APPROVE_LIMIT</code>).</p><p>Por encima pasa a <code>PENDING_REVIEW</code> y la revisa un supervisor.</p><p>Solo hay derecho a compensación con un retraso de 180 minutos o más.</p>

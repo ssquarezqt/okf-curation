@@ -1,0 +1,490 @@
+{
+ "issues": [
+  {
+   "key": "DEMO-1",
+   "fields": {
+    "summary": "Reclamaciones por retraso",
+    "issuetype": {
+     "name": "Epic"
+    },
+    "status": {
+     "name": "In Progress"
+    },
+    "resolution": null,
+    "priority": {
+     "name": "Medium"
+    },
+    "labels": [],
+    "assignee": {
+     "displayName": "Persona A"
+    },
+    "parent": null,
+    "created": "2026-03-01T09:00:00.000+0000",
+    "resolutiondate": null,
+    "description": {
+     "type": "doc",
+     "version": 1,
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Épica del servicio de reclamaciones."
+        }
+       ]
+      }
+     ]
+    },
+    "issuelinks": [],
+    "comment": {
+     "comments": [
+      {
+       "author": {
+        "displayName": "Automation for Jira"
+       },
+       "created": "2026-03-01T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Añadido al sprint 3."
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "changelog": {
+    "histories": []
+   }
+  },
+  {
+   "key": "DEMO-2",
+   "fields": {
+    "summary": "Alta de reclamación con aprobación automática",
+    "issuetype": {
+     "name": "Story"
+    },
+    "status": {
+     "name": "Done"
+    },
+    "resolution": {
+     "name": "Done"
+    },
+    "priority": {
+     "name": "Medium"
+    },
+    "labels": [],
+    "assignee": {
+     "displayName": "Persona A"
+    },
+    "parent": {
+     "key": "DEMO-1"
+    },
+    "created": "2026-03-05T09:00:00.000+0000",
+    "resolutiondate": "2026-03-20T18:00:00.000+0000",
+    "description": {
+     "type": "doc",
+     "version": 1,
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Crear POST /claims. Campos obligatorios: booking_ref, flight_number, delay_minutes, amount."
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Aprobación automática si amount <= 250 (AUTO_APPROVE_LIMIT). Por encima, PENDING_REVIEW."
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Solo da derecho a compensación un retraso de 180 minutos o más (MIN_DELAY_MINUTES)."
+        }
+       ]
+      }
+     ]
+    },
+    "issuelinks": [],
+    "comment": {
+     "comments": [
+      {
+       "author": {
+        "displayName": "Automation for Jira"
+       },
+       "created": "2026-03-05T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Añadido al sprint 3."
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "changelog": {
+    "histories": [
+     {
+      "created": "2026-03-20T18:00:00.000+0000",
+      "author": {
+       "displayName": "Persona A"
+      },
+      "items": [
+       {
+        "field": "status",
+        "fromString": "In Progress",
+        "toString": "Done"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "DEMO-3",
+   "fields": {
+    "summary": "Error 500 al crear reclamación sin token",
+    "issuetype": {
+     "name": "Bug"
+    },
+    "status": {
+     "name": "Done"
+    },
+    "resolution": {
+     "name": "Done"
+    },
+    "priority": {
+     "name": "Medium"
+    },
+    "labels": [],
+    "assignee": {
+     "displayName": "Persona A"
+    },
+    "parent": {
+     "key": "DEMO-1"
+    },
+    "created": "2026-04-02T09:00:00.000+0000",
+    "resolutiondate": "2026-04-06T18:00:00.000+0000",
+    "description": {
+     "type": "doc",
+     "version": 1,
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Al llamar a POST /claims sin cabecera Authorization la Lambda devuelve 500."
+        }
+       ]
+      }
+     ]
+    },
+    "issuelinks": [],
+    "comment": {
+     "comments": [
+      {
+       "author": {
+        "displayName": "Automation for Jira"
+       },
+       "created": "2026-04-02T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Añadido al sprint 3."
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "author": {
+        "displayName": "Persona B"
+       },
+       "created": "2026-04-05T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Causa: get_claims no toleraba requestContext sin authorizer. Arreglado en shared/auth.py: ahora devuelve 401 'No autenticado'."
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "changelog": {
+    "histories": [
+     {
+      "created": "2026-04-06T18:00:00.000+0000",
+      "author": {
+       "displayName": "Persona A"
+      },
+      "items": [
+       {
+        "field": "status",
+        "fromString": "In Progress",
+        "toString": "Done"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "DEMO-4",
+   "fields": {
+    "summary": "Subir el límite de aprobación automática a 400",
+    "issuetype": {
+     "name": "Story"
+    },
+    "status": {
+     "name": "Done"
+    },
+    "resolution": {
+     "name": "Done"
+    },
+    "priority": {
+     "name": "Medium"
+    },
+    "labels": [],
+    "assignee": {
+     "displayName": "Persona A"
+    },
+    "parent": {
+     "key": "DEMO-1"
+    },
+    "created": "2026-06-01T09:00:00.000+0000",
+    "resolutiondate": "2026-06-12T18:00:00.000+0000",
+    "description": {
+     "type": "doc",
+     "version": 1,
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Negocio pide subir AUTO_APPROVE_LIMIT de 250 a 400 para reducir la cola de revisión manual."
+        }
+       ]
+      },
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Se cambia la variable de entorno en producción; el valor por defecto del código no se toca."
+        }
+       ]
+      }
+     ]
+    },
+    "issuelinks": [],
+    "comment": {
+     "comments": [
+      {
+       "author": {
+        "displayName": "Automation for Jira"
+       },
+       "created": "2026-06-01T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Añadido al sprint 3."
+           }
+          ]
+         }
+        ]
+       }
+      },
+      {
+       "author": {
+        "displayName": "Persona C"
+       },
+       "created": "2026-06-12T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Hecho: AUTO_APPROVE_LIMIT=400 en la Lambda demo-create-claim de producción."
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "changelog": {
+    "histories": [
+     {
+      "created": "2026-06-12T18:00:00.000+0000",
+      "author": {
+       "displayName": "Persona A"
+      },
+      "items": [
+       {
+        "field": "status",
+        "fromString": "In Progress",
+        "toString": "Done"
+       }
+      ]
+     }
+    ]
+   }
+  },
+  {
+   "key": "DEMO-5",
+   "fields": {
+    "summary": "Error 500 al crear reclamación sin token (duplicado)",
+    "issuetype": {
+     "name": "Bug"
+    },
+    "status": {
+     "name": "Done"
+    },
+    "resolution": {
+     "name": "Done"
+    },
+    "priority": {
+     "name": "Medium"
+    },
+    "labels": [],
+    "assignee": {
+     "displayName": "Persona A"
+    },
+    "parent": {
+     "key": "DEMO-1"
+    },
+    "created": "2026-04-03T09:00:00.000+0000",
+    "resolutiondate": "2026-04-03T18:00:00.000+0000",
+    "description": {
+     "type": "doc",
+     "version": 1,
+     "content": [
+      {
+       "type": "paragraph",
+       "content": [
+        {
+         "type": "text",
+         "text": "Mismo error que DEMO-3."
+        }
+       ]
+      }
+     ]
+    },
+    "issuelinks": [
+     {
+      "type": {
+       "name": "duplicates"
+      },
+      "outwardIssue": {
+       "key": "DEMO-3"
+      }
+     }
+    ],
+    "comment": {
+     "comments": [
+      {
+       "author": {
+        "displayName": "Automation for Jira"
+       },
+       "created": "2026-04-03T10:00:00.000+0000",
+       "body": {
+        "type": "doc",
+        "version": 1,
+        "content": [
+         {
+          "type": "paragraph",
+          "content": [
+           {
+            "type": "text",
+            "text": "Añadido al sprint 3."
+           }
+          ]
+         }
+        ]
+       }
+      }
+     ]
+    }
+   },
+   "changelog": {
+    "histories": [
+     {
+      "created": "2026-04-03T18:00:00.000+0000",
+      "author": {
+       "displayName": "Persona A"
+      },
+      "items": [
+       {
+        "field": "status",
+        "fromString": "In Progress",
+        "toString": "Done"
+       }
+      ]
+     }
+    ]
+   }
+  }
+ ],
+ "total": 5
+}

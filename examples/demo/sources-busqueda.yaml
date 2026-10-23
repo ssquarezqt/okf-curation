@@ -1,0 +1,23 @@
+# Ejemplo sintético: dos repos (servicio + su frontend), un export de Jira y otro de Confluence.
+# Contradicción plantada: DEMO-4 sube AUTO_APPROVE_LIMIT a 400 en producción (junio), pero la página de reglas de Confluence,
+# modificada después (julio), sigue diciendo 250. Debe acabar como pregunta al cliente.
+sistema: demo-reclamaciones-busqueda
+modo: busqueda
+salida: ../../salida/okf-demo-reclamaciones-busqueda
+trabajo: ../../trabajo/demo-reclamaciones-busqueda
+repos:
+  - name: servicio-reclamaciones
+    path: servicio-reclamaciones
+    include: ["src/**/*.py", "scripts/*.sh"]
+    docs: ["README.md"]
+    contexto: API serverless de reclamaciones de pasajeros por retraso.
+  - name: web-reclamaciones
+    path: web-reclamaciones
+    include: ["src/**/*.ts", "src/**/*.tsx"]
+    docs: ["README.md"]
+    contexto: Frontend React de los agentes que registran reclamaciones.
+integraciones:
+  - consumidor: web-reclamaciones
+    proveedor: servicio-reclamaciones
+jira: atlassian/jira.json
+confluence: atlassian/confluence
