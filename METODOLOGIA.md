@@ -12,12 +12,12 @@ implementa este repo: `okf build` produce la jerarquía y `okf confirm` aplica l
 
 | Regla | Por qué |
 |---|---|
-| **Un concepto por fichero**, con frontmatter OKF (`type`, `title`, `description`, `sources`, `status`) | El buscador recupera trozos de ~2.000 caracteres. Un fichero que mezcla varios conceptos deja el dato en un trozo que no se recupera |
+| **Un concepto por fichero**, con frontmatter OKF (`type`, `title`, `description`, `sources`, `status`) | El buscador recupera trozos (en el piloto simulamos 2.000 caracteres; el tamaño real de Foundry IQ está por confirmar). Un fichero que mezcla varios conceptos deja el dato en un trozo que no se recupera |
 | **Cada sección se entiende sola**: su encabezado nombra el sujeto (`create_claim · Entrada`, no `Entrada`) | El trozo llega al agente sin el resto del documento |
 | **Lo que ya es un documento se convierte, no se resume** (tickets, páginas, docs de los repos) | Ningún resumen ganó al original convertido. Algunos perdían datos: duplicados, causas en comentarios |
 | **Lo que no es un documento se destila con estructura fija** (el código) | Con un planificador libre, el resultado era inestable (8–24 puntos entre ejecuciones). Con estructura fija fue estable y mejor |
 | **Los literales no se parafrasean**: nombres, variables, tablas, valores y comandos se extraen con herramientas y se verifican | Al redactar, los modelos perdían literales y ficheros de configuración. Con extracción y verificación se cubre el 100 % de los hechos |
-| **Lo que se contradice entre fuentes se reconcilia y se confirma con el cliente** | Ante un conflicto entre fuentes, sin reconciliar todo falla (14–36 %); con registro de vigencia, 68–82 % |
+| **Lo que se contradice entre fuentes se reconcilia y se confirma con el cliente** | Ante un conflicto entre fuentes, sin reconciliar todo falla (14–36 %); con registro de vigencia, 68–82 % de media |
 
 ## 2. La jerarquía de carpetas
 
@@ -53,7 +53,7 @@ okf-<sistema>/
 | **Docs del repo** (README, `docs/`) | `repos/<repo>/docs/…` | Lo que explica el porqué, la operación y los flujos | Nada | Copia con frontmatter |
 | **Repositorio de código** | Guía + digest + catálogos (sección 4) | Propósito, contratos, dependencias, flujos, configuración, restricciones | Se destila con estructura fija. No se reduce el volumen (el digest ocupó entre el 75 % y el 115 % del código), pero sí la forma: contrato primero, un componente por fichero, sin cuerpos de funciones. La guía es ~1 % del código | Hechos con herramientas + redacción con modelo barato + verificación |
 | **Varios repos** | `integracion/` | Qué llamada de un repo atiende qué componente de otro, por qué vía (variable de URL, ruta, SDK) | Índice + una ficha por llamada | Modelo barato con el código de los dos lados |
-| **Entre todas las fuentes** | `vigencia/` | Cada valor o regla que cambió o que no coincide entre fuentes, con su cronología y el vigente | Solo lo que cambia o se contradice | Dos modelos fuertes + confirmación del cliente (sección 5) |
+| **Entre todas las fuentes** | `vigencia/` | Cada valor o regla que cambió o que no coincide entre fuentes, con su cronología y el vigente | Solo lo que cambia o se contradice | Modelos fuertes + confirmación del cliente (sección 5) |
 
 ## 4. El repositorio de código en detalle
 
@@ -94,8 +94,8 @@ agente lee primero.
 | Flujos | El modelo elige 3–6 procesos y escribe cada uno con los ficheros que recorre (skill `repo-digest`) | 600–900 palabras |
 | Restricciones y trampas | Desde los comentarios de advertencia y el código central (skill `repo-digest`) | ~900 palabras |
 
-**Repos pequeños** (menos de unos 200.000 caracteres de código): el código tal cual más la guía rindió igual que el digest
-(`exportar_codigo: true`).
+**Repos pequeños**: en el repo pequeño probado (~190.000 caracteres), el código tal cual más la guía rindió igual que el digest
+(`exportar_codigo: true`). Es un solo caso; el umbral de ~200.000 caracteres es orientativo.
 
 **Sobre el árbol de dependencias.** También se probó a **organizar** todo el digest siguiendo el grafo de dependencias, y no
 funcionó mejor que otras organizaciones y fue inestable. Las dependencias van como **dato** en el catálogo y en cada ficha
@@ -103,8 +103,8 @@ funcionó mejor que otras organizaciones y fue inestable. Las dependencias van c
 
 ## 5. Reconciliar entre fuentes y confirmar con el cliente
 
-1. **Detectar.** Dos modelos fuertes de familias distintas leen todas las fuentes juntas, en orden cronológico, y registran cada valor o regla con su
-   cronología. Lo clasifican como **consistente**, **cambio documentado** (un ticket posterior lo cambia explícitamente) o
+1. **Detectar.** Un modelo fuerte lee todas las fuentes juntas, en orden cronológico, y registra cada valor o regla con su
+   cronología. Se usan dos de familias distintas por precaución: en el piloto, uno solo ya detectó los 7 conflictos conocidos. Lo clasifican como **consistente**, **cambio documentado** (un ticket posterior lo cambia explícitamente) o
    **contradicción** (las fuentes no coinciden y no hay resolución clara).
 2. **Preguntar.** Solo las contradicciones van al experto del cliente, una por pregunta, cerrada, con las evidencias y la propuesta
    por fecha marcada (`trabajo/<sistema>/confirmaciones.md`).
@@ -118,17 +118,17 @@ Es el único paso con persona, y el único en el que medimos que la curación ca
 |---|---|---|
 | 1 | Exportar una vez: foto de cada repo, Jira (JSON), Confluence (XML) | Persona con accesos |
 | 2 | Escanear datos sensibles (`okf scan`); se redactan solos, pero se excluyen los ficheros de credenciales | Automático + revisión |
-| 3 | Curar (`okf build`): hechos, guías, docs, digest, catálogos, Jira, Confluence, integración, vigencia | Automático, 5–15 min por sistema |
-| 4 | Revisar las guías por encima | Persona, 15–30 min por repo |
-| 5 | Confirmar las contradicciones | Experto del cliente, ~2 min por pregunta |
+| 3 | Curar (`okf build`): hechos, guías, docs, digest, catálogos, Jira, Confluence, integración, vigencia | Automático, 1–17 min por sistema (medido) |
+| 4 | Revisar las guías por encima | Persona, 15–30 min por repo (estimado) |
+| 5 | Confirmar las contradicciones | Experto del cliente, ~2 min por pregunta (estimado) |
 | 6 | Aplicar (`okf confirm`) y publicar el repo OKF (git → Blob → AI Search → Foundry IQ) | Automático |
 
 Procedimiento detallado en [CURAR-UN-REPO.md](CURAR-UN-REPO.md).
 
 ## 7. Si el agente pudiera leer ficheros enteros
 
-Con retrieval de trozos hay un techo: las **preguntas de sistema**, cuya respuesta está repartida entre varios ficheros, no pasaron
-del 42 %. Si el agente puede abrir documentos enteros (clonar el repo o leer ficheros de la KB con herramientas), el resultado
+Con retrieval de trozos hay un techo: en el repo C, las **preguntas de sistema**, cuya respuesta está repartida entre varios ficheros,
+no pasaron del 42 %. Si el agente puede abrir documentos enteros (clonar el repo o leer ficheros de la KB con herramientas), el resultado
 sube al 74–81 %, y entonces basta con la guía más el código tal cual (`modo: agente`, `exportar_codigo: true`). Conviene comprobar
 en el spike de Azure si Foundry IQ o el agente hospedado lo permiten.
 
@@ -152,10 +152,10 @@ en el spike de Azure si Foundry IQ o el agente hospedado lo permiten.
 | **Una ficha por componente, contrato primero** (+ flujos, restricciones y catálogos) | De ~45 % a 60–67 %, estable | **Digest del repo** |
 | **Digest + documentación del repo** | 72 % (frente a 46–54 % del digest solo) | **Se publican los docs del repo** |
 | Herramienta de mercado (CodeWiki) | 16 % | Descartado |
-| Guía corta + código, con agente | 74–81 %, el mejor en los tres repos | **Guía en todos los casos** |
+| Guía corta + código, con agente | 74–81 %; la guía aportó de 0 a +31 puntos según el repo | **Guía en todos los casos** |
 | Jira: por ticket, épica o funcionalidad · Confluence: trocear, plantilla, proposiciones | Ninguno ganó al export convertido, ni con 686 tickets | **Convertir sin resumir** |
 | Mapa de integración entre repos | Búsqueda: de 29–32 % a 44–50 % | **Índice + fichas de integración** |
-| **Registro de vigencia entre fuentes** | Conflictos: de 14–36 % a 68–82 %; curar cada fuente por separado, 7 % | **Vigencia + confirmación** |
+| **Registro de vigencia entre fuentes** | Conflictos: de 14–36 % a 68–82 % de media; curar cada fuente por separado, 7 % | **Vigencia + confirmación** |
 
 **Validación de este repo:** con las mismas fuentes y preguntas reproduce los resultados del piloto (repo A 87–88 %, repo C
 85 % / 82 %, entre repos 79 %, conflictos 50–71 %). El detector encuentra 7 de 7 conflictos conocidos.
