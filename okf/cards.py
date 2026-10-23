@@ -56,6 +56,30 @@ def catalogs(fx: dict, out: Path, gen: dict) -> int:
         write(base / "comandos-configuracion.md", {"type": "Catalog", "title": f"Comandos y configuración de {fx['repo']}", "sources": src,
                                                    "generated": gen, "status": "stable"}, "\n".join(body))
         made += 1
+    # componentes y dependencias: el árbol de quién usa a quién dentro del repo y los paquetes externos
+    code = {r: f for r, f in fx["files"].items() if f["kind"] in {"code", "script"}}
+    body = [f"# Catalog · Componentes y dependencias de {fx['repo']}", "",
+            f"Cada fichero de código de `{fx['repo']}`: qué hace según su cabecera, qué define, de qué ficheros del repo depende (usa) "
+            "y cuáles dependen de él (lo usan), con sus variables de entorno y tablas. Al final, las dependencias externas.", ""]
+    for g in sorted({group_of(r) for r in code}):
+        body += [f"## Componentes del grupo {g} en {fx['repo']}", ""]
+        for r in sorted(x for x in code if group_of(x) == g):
+            f = code[r]
+            bits = [f"- `{r}`"]
+            if f.get("header"):
+                bits.append(f["header"].splitlines()[0][:160])
+            for key, label in (("symbols", "define"), ("uses", "usa"), ("used_by", "lo usan"), ("env", "variables"), ("tables", "tablas")):
+                if f.get(key):
+                    bits.append(f"{label} " + ", ".join(f"`{v}`" for v in f[key][:10]))
+            body.append(" · ".join(bits))
+        body.append("")
+    pk = [(p["name"], a, b) for p in fx["projects"] for a, b in p.get("packages", [])]
+    if pk:
+        body += [f"## Dependencias externas de {fx['repo']}", ""] + [f"- `{a}` {b}".rstrip() + f" (proyecto `{n}`)" for n, a, b in pk]
+    if code:
+        write(base / "componentes-dependencias.md", {"type": "Catalog", "title": f"Componentes y dependencias de {fx['repo']}", "sources": src,
+                                                     "generated": gen, "status": "stable"}, "\n".join(body))
+        made += 1
     return made
 
 
@@ -132,4 +156,4 @@ def build(fx: dict, out: Path, model: str, gen: dict, parallel: int = 10) -> dic
         list(pool.map(lambda s: _write_card(s, fx, out, model, gen), specs))
     n_flows = flows(fx, out, model, gen)
     restrictions(fx, out, model, gen)
-    return {"fichas": len(specs), "flujos": n_flows, "catalogos": catalogs(fx, out, gen), "restricciones": 1}
+    return {"fichas": len(specs), "flujos": n_flows, "restricciones": 1}

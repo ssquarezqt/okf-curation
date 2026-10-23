@@ -3,8 +3,9 @@
   1. escanear   datos sensibles en las fuentes (informe en trabajo/; lo que se encuentre se redacta igualmente)
   2. extraer    hechos deterministas de cada repo
   3. guías      una guía de navegación por repo                       (LLM redactor)
-  4. código     caso A (exportar_codigo): el código tal cual en la KB
-  5. fichas     modo búsqueda: ficha por componente + catálogos       (LLM redactor)
+  4. repo       sin modelo: docs del repo tal cual y catálogos (incl. componentes y dependencias) en modo búsqueda;
+                código tal cual si exportar_codigo
+  5. digest     modo búsqueda: fichas por componente, flujos, restricciones y trampas   (LLM redactor)
   6. atlassian  Jira y Confluence → Markdown sin resumir               (sin LLM)
   7. integra    índice entre repos (+ fichas en modo búsqueda)         (LLM redactor)
   8. vigencia   registro de vigencia + preguntas al cliente           (2 detectores fuertes + fusión)
@@ -54,13 +55,18 @@ def run(cfg: Config, pasos: set[str] | None = None, offline: bool = False) -> di
         print("[3/9] guías de cada repo", flush=True)
         with ThreadPoolExecutor(4) as pool:
             list(pool.map(lambda fx: guides.write_guide(fx, out, cfg.modelo("redactor"), gen), fxs.values()))
-    if "codigo" in pasos and cfg.exportar_codigo:
-        print("[4/9] código tal cual (caso A)", flush=True)
-        info["codigo_exportado"] = sum(guides.export_code(fx, out, gen) for fx in fxs.values())
+    from . import cards
+    if "codigo" in pasos and (cfg.exportar_codigo or cfg.modo == "busqueda"):
+        print("[4/9] contenido del repo sin modelo: docs, catálogos y código", flush=True)
+        if cfg.exportar_codigo:   # el agente no clona pero lee ficheros de la KB: el código va tal cual (incluye los docs)
+            info["codigo_exportado"] = sum(guides.export_code(fx, out, gen) for fx in fxs.values())
+        if cfg.modo == "busqueda":
+            if not cfg.exportar_codigo:
+                info["docs_del_repo"] = sum(guides.export_docs(fx, out, gen) for fx in fxs.values())
+            info["catalogos"] = {k: cards.catalogs(fx, out, gen) for k, fx in fxs.items()}
     if "fichas" in pasos and cfg.modo == "busqueda":
-        print("[5/9] digest del repo: fichas, flujos, restricciones y catálogos (modo búsqueda)", flush=True)
-        from . import cards
-        info["fichas"] = {k: cards.build(fx, out, cfg.modelo("redactor"), gen) for k, fx in fxs.items()}
+        print("[5/9] digest del repo: fichas por componente, flujos y restricciones (modo búsqueda)", flush=True)
+        info["digest"] = {k: cards.build(fx, out, cfg.modelo("redactor"), gen) for k, fx in fxs.items()}
 
     jira_md, conf_md = [], []
     if "atlassian" in pasos or "vigencia" in pasos:

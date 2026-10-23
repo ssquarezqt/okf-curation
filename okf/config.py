@@ -22,7 +22,7 @@ class Repo:
 @dataclass
 class Config:
     sistema: str
-    modo: str                                  # agente | busqueda
+    modo: str                                  # busqueda (retrieval desde Blob, por defecto) | agente
     salida: Path                               # carpeta del repo OKF que se genera
     trabajo: Path                              # registro de vigencia, preguntas al cliente, informes
     repos: list[Repo]
@@ -51,7 +51,7 @@ def load(path: str | Path) -> Config:
     raw = yaml.safe_load(path.read_text(encoding="utf-8"))
     base = path.parent
     rel = lambda p: (base / p).resolve() if p and not Path(p).is_absolute() else (Path(p) if p else None)
-    modo = raw.get("modo", "agente")
+    modo = raw.get("modo", "busqueda")   # la arquitectura objetivo es retrieval desde Blob (Foundry IQ)
     if modo not in MODOS:
         raise SystemExit(f"modo debe ser uno de {MODOS}, no {modo!r}")
     repos = [Repo(name=r["name"], path=rel(r["path"]), include=r["include"], docs=r.get("docs", []),

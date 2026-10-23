@@ -55,6 +55,21 @@ def write_guide(fx: dict, out: Path, model: str, gen: dict) -> str:
     return body
 
 
+def export_docs(fx: dict, out: Path, gen: dict) -> int:
+    """La documentación que ya existe en el repo (README, docs/) se publica tal cual: ya es Markdown y explica el porqué.
+    En el piloto, documentación + digest fue lo mejor con búsqueda (72 % frente a 46–54 % del digest solo)."""
+    n = 0
+    for rel, text in fx["texts"].items():
+        if fx["files"][rel]["kind"] != "doc":
+            continue
+        write(out / "repos" / fx["repo"] / "docs" / rel, {"type": "Repository Document", "title": next((l[2:].strip() for l in text.splitlines()
+                                                                                                    if l.startswith("# ")), rel),
+                                                          "sources": [{"resource": f"{fx['repo']}@{fx['snapshot']}:{rel}"}], "generated": gen,
+                                                          "status": "stable"}, text)
+        n += 1
+    return n
+
+
 def export_code(fx: dict, out: Path, gen: dict) -> int:
     """Caso A: el agente no clona el repo pero sí puede leer ficheros de la KB → el código va tal cual (ya redactado)."""
     n = 0

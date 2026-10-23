@@ -3,18 +3,19 @@
 Convierte repos de código, Jira y Confluence en un **repo OKF** (Markdown + YAML, Open Knowledge Format v0.2) para
 que agentes de código entiendan los sistemas que van a usar o integrar.
 
-Hace solo lo que demostró aportar en el piloto (ver [METODOLOGIA.md](METODOLOGIA.md)):
+Pensado para la arquitectura de retrieval nativa desde Azure Blob (Blob → AI Search → Foundry IQ). **Qué se genera de cada
+fuente, cuál es el contenido clave y cuánto se destila** está en [METODOLOGIA.md](METODOLOGIA.md). El procedimiento paso a
+paso, en [CURAR-UN-REPO.md](CURAR-UN-REPO.md). Hace solo lo que demostró aportar en el piloto:
 
 | Pieza | Qué es | Cómo |
 |---|---|---|
 | **Guía por repo** | Para qué sirve, qué expone, arquitectura, dónde está cada cosa | LLM barato |
+| **Digest del repo** | Docs del repo tal cual, una ficha por componente (contrato primero), flujos, restricciones y catálogos (componentes y dependencias, variables, tablas, comandos) | Hechos sin LLM + LLM barato |
 | **Jira y Confluence** | Convertidos a Markdown **sin resumir** | Sin LLM |
 | **Índice de integración** | Qué componente de un repo atiende cada llamada de otro | LLM barato |
 | **Registro de vigencia** | Cada valor o regla con su historia entre fuentes; las **contradicciones se preguntan al cliente** | 2 modelos fuertes + el cliente |
-| *Modo búsqueda* | Si el agente no puede leer el código: además, el **digest** del repo (ficha por componente, flujos, restricciones y catálogos) | LLM barato |
 
-**¿Hay que curar el repo o basta con la guía?** Depende de si el agente puede leer el código: ver el árbol de decisión y el
-procedimiento paso a paso en [CURAR-UN-REPO.md](CURAR-UN-REPO.md).
+Si el agente puede leer ficheros enteros (clonar o leer de la KB), basta con la guía y el código tal cual (`modo: agente`).
 
 ## Uso
 
@@ -36,9 +37,9 @@ uv run okf confirm --config config/local-mi-sistema.yaml         # 3. aplica sus
 **Prueba con el ejemplo sintético** (dos repos, Jira y Confluence con una contradicción plantada):
 
 ```bash
-uv run okf build --config examples/demo/sources.yaml            # modo agente
+uv run okf build --config examples/demo/sources.yaml            # modo agente (solo guía)
 cat trabajo/demo-reclamaciones/confirmaciones.md                 # la pregunta al cliente por AUTO_APPROVE_LIMIT
-uv run okf build --config examples/demo/sources-busqueda.yaml   # modo búsqueda: añade fichas por componente y de integración
+uv run okf build --config examples/demo/sources-busqueda.yaml   # modo búsqueda (por defecto): guía + docs + digest + catálogos
 ```
 
 ## Qué produce
@@ -48,7 +49,8 @@ okf-<sistema>/                      repo git; súbelo a su propio repositorio y 
 ├── index.md                        okf_version 0.2
 ├── repos/<repo>/guia.md            guía de navegación de cada repo
 │   ├── codigo/…                    solo si exportar_codigo: true (el agente no clona pero lee ficheros)
-│   └── componentes/ flujos/ restricciones-trampas.md catalogos/     solo en modo búsqueda (digest)
+│   ├── docs/ componentes/ flujos/ restricciones-trampas.md     modo búsqueda (digest)
+│   └── catalogos/                  componentes y dependencias, variables, tablas, comandos
 ├── integracion/<consumidor>--<proveedor>.md
 ├── jira/<KEY>.md · confluence/<id>.md
 ├── vigencia/<id>-<tema>.md         stable si es consistente, cambio documentado o confirmado; draft si espera al cliente

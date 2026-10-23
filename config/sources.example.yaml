@@ -3,12 +3,12 @@
 
 sistema: mi-sistema                 # nombre corto; da nombre al repo OKF
 
-# Cómo llega el conocimiento al agente (ver METODOLOGIA.md, "Dos modos de entrega"):
-#   agente    el agente explora (clona los repos o lee ficheros de la KB con herramientas)   ← recomendado
-#   busqueda  el agente solo recibe trozos de un buscador (Foundry IQ sin lectura de ficheros) → añade fichas por componente
-modo: agente
+# Cómo llega el conocimiento al agente (ver CURAR-UN-REPO.md):
+#   busqueda  retrieval desde Blob (Foundry IQ): el agente recibe trozos → se cura el repo: guía + docs + digest + catálogos  ← por defecto
+#   agente    el agente explora ficheros (clona los repos o los lee de la KB con herramientas) → basta la guía
+modo: busqueda
 
-# Caso A: el agente NO puede clonar los repos, pero SÍ puede leer ficheros de la KB → el código se publica tal cual en la KB.
+# El agente no clona los repos pero sí lee ficheros de la KB (o el repo es pequeño) → el código se publica tal cual en la KB.
 exportar_codigo: false
 
 salida: ../salida/okf-mi-sistema     # carpeta del repo OKF (se crea con git); súbela a su propio repo

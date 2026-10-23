@@ -3,32 +3,28 @@
 Procedimiento para preparar el conocimiento de un sistema (sus repos, su Jira y su Confluence) para que lo usen los agentes
 de código. El porqué de cada decisión está en [METODOLOGIA.md](METODOLOGIA.md).
 
-## 1. Decide cuánto hay que curar el repo
+## 1. Qué se genera de cada repo
 
-Depende de **cómo llega el conocimiento al agente**, no del repo. Es lo primero que hay que saber:
+**Por defecto (la arquitectura objetivo: retrieval desde Blob con Foundry IQ):** el agente recibe trozos de un buscador y no
+ve el código, así que **el repo se cura**. Se publica la guía, la documentación del repo tal cual, el **digest** (una ficha por
+componente, flujos, restricciones y trampas) y los **catálogos** (componentes y dependencias, variables, tablas, comandos).
+Configuración: `modo: busqueda` (por defecto). El detalle de qué contenido es clave y cuánto se destila está en
+[METODOLOGIA.md](METODOLOGIA.md), sección 4.
 
-```
-¿El agente puede clonar el repo?
-├── Sí ─────────────────────────────────────────────► CASO 1 · Repo accesible
-└── No → ¿Puede leer ficheros de la base de conocimiento
-         (abrir un documento entero, listar, buscar texto)?
-         ├── Sí ────────────────────────────────────► CASO 2 · Código dentro de la KB
-         └── No, solo recibe trozos de un buscador ─► CASO 3 · Hay que curar el repo (digest)
-```
+**Alternativas, si la arquitectura lo permite:**
 
-| | Caso 1 · Repo accesible | Caso 2 · Código dentro de la KB | Caso 3 · Curar el repo (digest) |
+| | Por defecto · retrieval | Alternativa · el agente lee ficheros de la KB | Alternativa · el agente clona el repo |
 |---|---|---|---|
-| **Cuándo** | El agente clona el repo | No puede clonar, pero lee ficheros de la KB | Solo recibe trozos de un buscador (Foundry IQ sin lectura de ficheros) |
-| **Qué se publica del repo** | Solo la guía | Guía + el código tal cual (sin resumir) | Guía + **digest**: una ficha por componente, flujos, restricciones y trampas, catálogos |
-| **Configuración** | `modo: agente` | `modo: agente`, `exportar_codigo: true` | `modo: busqueda` |
-| **Entre repos** | Índice de integración | Índice de integración | Índice + una ficha por integración |
-| **Resultado en el piloto** | 74–81 % | Igual que el caso 1: para el agente es lo mismo leer el código del repo que de la KB | 60–72 % en uso, **como mucho 42 % en preguntas de sistema** |
+| **Qué se publica del repo** | Guía + docs + digest + catálogos | Guía + el código tal cual | Solo la guía |
+| **Configuración** | `modo: busqueda` | `modo: agente`, `exportar_codigo: true` | `modo: agente` |
+| **Entre repos** | Índice + una ficha por llamada | Índice | Índice |
+| **Resultado en el piloto** | 60–72 % en uso, **como mucho 42 % en preguntas de sistema** | 74–81 % | 74–81 % |
 
-**Repos pequeños** (menos de unos 200.000 caracteres de código): en el caso 3, el código tal cual con la guía rindió igual
-que el digest. Puedes usar `exportar_codigo: true` aunque el modo sea `busqueda`.
+**Repos pequeños** (menos de unos 200.000 caracteres de código): el código tal cual con la guía rindió igual que el digest.
+Puedes usar `exportar_codigo: true` también en modo `busqueda`.
 
-**Si estás en el caso 3, intenta pasar al 2.** El techo de las preguntas de sistema no lo arregla ninguna curación: el
-buscador no junta información repartida entre ficheros. Que el agente pueda abrir un documento entero lo cambia todo.
+**El techo del retrieval** en preguntas de sistema (respuestas repartidas entre ficheros) no lo arregla ninguna curación. Si
+Foundry IQ o el agente hospedado pueden abrir documentos enteros, la alternativa central sube al 74–81 %. Compruébalo en el spike de Azure.
 
 ## 2. Qué se genera siempre, sea cual sea el caso
 
@@ -59,7 +55,7 @@ valores y un aviso.
 ## 4. Cuándo repetir
 
 - **Cambio importante en un repo** (componentes nuevos, otra arquitectura): `okf build --pasos guias,integracion`, o la
-  curación completa en el caso 3.
+  curación completa en modo `busqueda`.
 - **Nuevo export de Jira o Confluence**: `okf build --pasos atlassian,vigencia`, y vuelve a preguntar al cliente lo nuevo.
 - **Para medir si una curación sirve con fuentes reales**: `eval/bench.py` genera preguntas verificadas a partir del código y
   mide al agente. `eval/recall_vigencia.py` comprueba cuántas contradicciones conocidas detecta el registro.
