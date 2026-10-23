@@ -1,7 +1,12 @@
-"""Modo búsqueda: una ficha por componente (skill component-card) y catálogos deterministas.
+"""Modo búsqueda: el digest del repo (skill repo-digest) cuando el agente no puede leer el código.
 
-Solo se generan si el agente no puede leer el código y recibe trozos de un buscador (Foundry IQ). En el piloto, con
-búsqueda, las fichas subieron el acierto de 43–52 % a 60–67 % frente a resumir por grupos, y fueron estables.
+  componentes/   una ficha por componente, contrato primero (skill component-card)
+  flujos/        3–6 procesos de negocio de punta a punta
+  restricciones-trampas.md
+  catalogos/     variables de entorno, tablas, comandos y configuración (deterministas)
+
+Solo se generan si el agente recibe trozos de un buscador (Foundry IQ). En el piloto, esta estructura fija (M6) subió el
+acierto de 43–52 % a 60–67 % frente a resumir por grupos, y fue estable entre ejecuciones.
 """
 from __future__ import annotations
 
@@ -76,8 +81,55 @@ def _write_card(s: dict, fx: dict, out: Path, model: str, gen: dict) -> None:
                             "sources": [{"resource": f"{fx['repo']}@{fx['snapshot']}:{r}"} for r in s["files"]], "generated": gen, "status": "draft"}, body)
 
 
-def build(fx: dict, out: Path, model: str, gen: dict, parallel: int = 10) -> int:
+def _sources(files: list[str], fx: dict, budget: int = 60_000) -> str:
+    parts, used = [], 0
+    for r in files:
+        t = fx["texts"].get(r)
+        if t is None or used + len(t) > budget:
+            continue
+        parts.append(f"### `{r}`\n```\n{t}\n```")
+        used += len(t)
+    return "\n\n".join(parts)
+
+
+def flows(fx: dict, out: Path, model: str, gen: dict, parallel: int = 6) -> int:
+    """3–6 procesos de negocio de punta a punta (skill repo-digest): juntan lo que está repartido entre ficheros."""
+    system = skill("okf-format") + "\n\n" + skill("repo-digest")
+    code = [r for r, f in fx["files"].items() if f["kind"] == "code"]
+    plan = llm.json_call(model, system, f"Repositorio: {fx['repo']}. Contexto: {fx['contexto']}\n\nINVENTARIO:\n{extract.inventory(fx, {'code', 'script', 'config'})}\n\n"
+                         f"HECHOS GLOBALES:\n{extract.global_facts(fx)}\n\nElige los flujos. Devuelve SOLO JSON "
+                         '{"flows": [{"name": "nombre de negocio", "files": ["rutas exactas del inventario, en orden"], "question": "¿Qué pasa cuando …?"}]}').get("flows", [])[:6]
+
+    def one(f):
+        files = [r for r in f.get("files", []) if r in fx["texts"]] or code[:3]
+        doc = llm.json_call(model, system, f"Repositorio: {fx['repo']}. Escribe el flujo «{f['name']}» ({f.get('question', '')}).\n\n"
+                            f"HECHOS:\n{extract.facts_block(files, fx)}\n\nFUENTES:\n{_sources(files, fx)}")
+        write(out / "repos" / fx["repo"] / "flujos" / f"{slug(f['name'])}.md",
+              {"type": "Flow", "title": doc.get("title", f["name"]), "description": doc.get("description", ""), "tags": doc.get("tags", []),
+               "sources": [{"resource": f"{fx['repo']}@{fx['snapshot']}:{r}"} for r in files], "generated": gen, "status": "draft"}, doc.get("body", ""))
+
+    with ThreadPoolExecutor(parallel) as pool:
+        list(pool.map(one, plan))
+    return len(plan)
+
+
+def restrictions(fx: dict, out: Path, model: str, gen: dict) -> None:
+    """Lo que hay que saber para no romper nada, a partir de los comentarios de advertencia y del código central."""
+    notes = "\n".join(f"- `{r}`: {n}" for r, f in fx["files"].items() for n in f.get("notes", []))[:20000]
+    hubs = sorted((r for r, f in fx["files"].items() if f["kind"] == "code"), key=lambda r: -len(fx["files"][r].get("used_by", [])))
+    doc = llm.json_call(model, skill("okf-format") + "\n\n" + skill("repo-digest"),
+                        f"Repositorio: {fx['repo']}. Escribe el documento de restricciones y trampas.\n\nCOMENTARIOS DE ADVERTENCIA Y DECISIÓN:\n{notes}\n\n"
+                        f"HECHOS GLOBALES:\n{extract.global_facts(fx)}\n\nCÓDIGO CENTRAL:\n{_sources(hubs, fx, 50_000)}")
+    write(out / "repos" / fx["repo"] / "restricciones-trampas.md", {"type": "Reference", "title": doc.get("title", f"Restricciones y trampas de {fx['repo']}"),
+                                                                     "description": doc.get("description", ""), "generated": gen, "status": "draft",
+                                                                     "sources": [{"resource": f"{fx['repo']}@{fx['snapshot']}"}]}, doc.get("body", ""))
+
+
+def build(fx: dict, out: Path, model: str, gen: dict, parallel: int = 10) -> dict:
+    """Digest completo del modo búsqueda: fichas por componente, flujos, restricciones y catálogos (la guía va aparte)."""
     specs = [_spec(r, fx) for r, f in sorted(fx["files"].items()) if f["kind"] == "code"]
     with ThreadPoolExecutor(parallel) as pool:
         list(pool.map(lambda s: _write_card(s, fx, out, model, gen), specs))
-    return len(specs) + catalogs(fx, out, gen)
+    n_flows = flows(fx, out, model, gen)
+    restrictions(fx, out, model, gen)
+    return {"fichas": len(specs), "flujos": n_flows, "catalogos": catalogs(fx, out, gen), "restricciones": 1}

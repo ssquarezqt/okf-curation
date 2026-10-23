@@ -58,7 +58,7 @@ def run(cfg: Config, pasos: set[str] | None = None, offline: bool = False) -> di
         print("[4/9] código tal cual (caso A)", flush=True)
         info["codigo_exportado"] = sum(guides.export_code(fx, out, gen) for fx in fxs.values())
     if "fichas" in pasos and cfg.modo == "busqueda":
-        print("[5/9] fichas por componente y catálogos (modo búsqueda)", flush=True)
+        print("[5/9] digest del repo: fichas, flujos, restricciones y catálogos (modo búsqueda)", flush=True)
         from . import cards
         info["fichas"] = {k: cards.build(fx, out, cfg.modelo("redactor"), gen) for k, fx in fxs.items()}
 

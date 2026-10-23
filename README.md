@@ -11,7 +11,10 @@ Hace solo lo que demostró aportar en el piloto (ver [METODOLOGIA.md](METODOLOGI
 | **Jira y Confluence** | Convertidos a Markdown **sin resumir** | Sin LLM |
 | **Índice de integración** | Qué componente de un repo atiende cada llamada de otro | LLM barato |
 | **Registro de vigencia** | Cada valor o regla con su historia entre fuentes; las **contradicciones se preguntan al cliente** | 2 modelos fuertes + el cliente |
-| *Modo búsqueda* | Además, una ficha por componente y catálogos, si el agente solo recibe trozos de un buscador | LLM barato |
+| *Modo búsqueda* | Si el agente no puede leer el código: además, el **digest** del repo (ficha por componente, flujos, restricciones y catálogos) | LLM barato |
+
+**¿Hay que curar el repo o basta con la guía?** Depende de si el agente puede leer el código: ver el árbol de decisión y el
+procedimiento paso a paso en [CURAR-UN-REPO.md](CURAR-UN-REPO.md).
 
 ## Uso
 
@@ -45,7 +48,7 @@ okf-<sistema>/                      repo git; súbelo a su propio repositorio y 
 ├── index.md                        okf_version 0.2
 ├── repos/<repo>/guia.md            guía de navegación de cada repo
 │   ├── codigo/…                    solo si exportar_codigo: true (el agente no clona pero lee ficheros)
-│   └── componentes/ catalogos/     solo en modo búsqueda
+│   └── componentes/ flujos/ restricciones-trampas.md catalogos/     solo en modo búsqueda (digest)
 ├── integracion/<consumidor>--<proveedor>.md
 ├── jira/<KEY>.md · confluence/<id>.md
 ├── vigencia/<id>-<tema>.md         stable si es consistente, cambio documentado o confirmado; draft si espera al cliente
@@ -62,7 +65,7 @@ trabajo/<sistema>/                  fuera del repo OKF
 ```
 okf/        el pipeline (config, sources, extract, convert, guides, integration, validity, cards, okfio, pipeline, cli)
 skills/     los prompts, en formato SKILL.md: okf-format, repo-guide, integration-index, validity-register,
-            client-confirmation, component-card. Un agente puede usarlas tal cual.
+            client-confirmation y, para el modo búsqueda, repo-digest y component-card. Un agente puede usarlas tal cual.
 eval/       banco de pruebas: generar preguntas verificadas y medir agente o búsqueda sobre una KB (eval/bench.py)
 examples/   ejemplo sintético
 config/     sources.example.yaml

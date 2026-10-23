@@ -27,7 +27,7 @@ de dos formas, y el formato sirve para las dos:
 | Integration Index | Qué componente de un repo usa qué componente de otro (skill `integration-index`) | `integracion/` |
 | Vigencia | Valor o regla con su historia entre fuentes y el valor vigente (skill `validity-register`) | `vigencia/` |
 | Jira Issue / Confluence Page | Export convertido sin resumir | `jira/`, `confluence/` |
-| API · Catalog | Ficha por componente y catálogos, solo en modo búsqueda (skill `component-card`) | `repos/<repo>/componentes/`, `catalogos/` |
+| API · Flow · Reference · Catalog | Digest del repo, solo en modo búsqueda: ficha por componente (skill `component-card`), flujos y restricciones (skill `repo-digest`), catálogos | `repos/<repo>/componentes/`, `flujos/`, `restricciones-trampas.md`, `catalogos/` |
 
 ## Reglas de escritura (para todo lo que redacta un modelo)
 

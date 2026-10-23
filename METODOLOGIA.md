@@ -53,14 +53,16 @@ mirar la fuente. Las piezas que sí movieron el resultado fueron la **guía** de
 | | **Modo agente** (recomendado) | **Modo búsqueda** |
 |---|---|---|
 | Cuándo | El agente puede explorar: clona los repos o lee ficheros de la KB con herramientas | El agente solo recibe trozos de un buscador |
-| Repos | Guía + acceso al código. Si no puede clonar pero sí leer ficheros de la KB: el código tal cual en la KB (`exportar_codigo: true`). Para el agente es lo mismo | Guía + **ficha por componente** + catálogos |
+| Repos | Guía + acceso al código. Si no puede clonar pero sí leer ficheros de la KB: el código tal cual en la KB (`exportar_codigo: true`). Para el agente es lo mismo | Guía + **digest** (estructura fija M6): ficha por componente, 3–6 flujos de punta a punta, restricciones y trampas, catálogos |
 | Entre repos | Índice de integración | Índice + fichas de integración |
 | Techo medido | 74–81 % (uso y sistema) | 60–72 % en uso, **≤ 42 % en preguntas de sistema** |
 
 Si el agente solo tiene búsqueda, las preguntas que exigen juntar varios ficheros quedan por debajo del 42 %, y ninguna
 curación lo arregla del todo. Por eso conviene que el agente pueda **leer documentos enteros**, no solo recibir trozos.
 
-### El proceso
+#El procedimiento práctico, con el árbol de decisión de cuánto curar cada repo, está en [CURAR-UN-REPO.md](CURAR-UN-REPO.md).
+
+## El proceso
 
 | Paso | Qué | Quién | Tiempo |
 |---|---|---|---|
