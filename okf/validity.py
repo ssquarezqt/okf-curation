@@ -74,6 +74,12 @@ def merge(model: str, found: dict[str, list[dict]]) -> list[dict]:
     return data.get("entradas", [])
 
 
+def _iso(fecha) -> str:
+    """Fecha de confirmación (AAAA-MM-DD o completa) en ISO 8601 con desfase UTC explícito, como pide OKF."""
+    f = str(fecha or now_iso())
+    return f if "T" in f else f"{f[:10]}T00:00:00+00:00"
+
+
 def _norm(v) -> str:
     return re.sub(r"[^\w.]", "", str(v).lower())
 
@@ -119,9 +125,12 @@ def publish(entries: list[dict], out: Path, gen: dict) -> None:
             p.unlink()
     for e in entries:
         stable = e.get("estado") == "confirmado" or e.get("clase") in {"consistente", "cambio"}
+        # OKF: la confirmación de una persona va en `verified` con un actor `human:` (nivel de confianza "revisado por humano")
+        verified = ([{"by": f"human:{e.get('confirmado_por') or 'cliente'}", "at": _iso(e.get("fecha_confirmacion"))}]
+                    if e.get("estado") == "confirmado" else None)
         write(folder / f"{e['id']}-{slug(e['tema'], 50)}.md", {"type": "Vigencia", "title": f"Vigencia · {e['tema']}",
                                                               "description": f"Valor vigente: {str(e.get('vigente'))[:150]}", "generated": gen,
-                                                              "status": "stable" if stable else "draft"}, render(e))
+                                                              "verified": verified, "status": "stable" if stable else "draft"}, render(e))
     pend = [e for e in entries if e.get("clase") == "contradiccion" and e.get("estado") != "confirmado"]
     write(folder / "pendientes.md", {"type": "Vigencia", "title": "Contradicciones sin confirmar", "generated": gen, "status": "draft"},
           "# Vigencia · Contradicciones sin confirmar\n\nValores en los que las fuentes no coinciden y el cliente aún no ha confirmado "

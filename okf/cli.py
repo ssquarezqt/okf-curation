@@ -43,8 +43,9 @@ def main(argv: list[str] | None = None) -> int:
         cfg = config.load(a.config)
         n = apply_answers(cfg.salida, cfg.trabajo, cfg.sistema)
         build_indexes(cfg.salida, cfg.sistema, cfg.modo)
-        append_log(cfg.salida, f"{n} valores confirmados por el cliente")
-        commit(cfg.salida, f"Vigencia: {n} confirmaciones del cliente")
+        if n:
+            append_log(cfg.salida, f"{n} valores confirmados por el cliente")
+            commit(cfg.salida, f"Vigencia: {n} confirmaciones del cliente")
         print(f"{n} respuestas aplicadas; pendientes en {cfg.trabajo / 'confirmaciones.md'}")
         return 0
     if a.cmd == "scan":

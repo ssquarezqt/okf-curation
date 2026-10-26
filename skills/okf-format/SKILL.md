@@ -16,7 +16,12 @@ de dos formas, y el formato sirve para las dos:
 - **Frontmatter YAML** con `type` (obligatorio), `title`, `description` (una frase), `tags`, `sources`
   (`resource` = `<repo>@<foto>:<fichero>`, `jira:<KEY>` o `confluence:<id>@v<versión>`), `generated` (`by`, `at`) y
   `status` (`draft` | `stable` | `deprecated`).
-- `index.md` en cada carpeta y `log.md` en la raíz son reservados: los genera el pipeline. El `index.md` raíz lleva `okf_version`.
+- `verified`: lista de `{by, at}` cuando alguien confirma el contenido. Una persona va como `human:<nombre>` (así se marca
+  el valor que confirma el cliente en el registro de vigencia).
+- Fechas en ISO 8601 con desfase UTC explícito (`2026-10-23T00:00:00+00:00`).
+- `index.md` en cada carpeta y `log.md` en la raíz son reservados: los genera el pipeline y ningún concepto puede llamarse
+  así (un `index.md` que traiga un repo se publica como `index-doc.md`). El `index.md` raíz lleva `okf_version`. `log.md`
+  agrupa las entradas bajo encabezados `## AAAA-MM-DD`, lo más reciente primero.
 
 ## Tipos que produce esta curación
 

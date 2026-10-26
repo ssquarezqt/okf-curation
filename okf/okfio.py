@@ -16,7 +16,11 @@ from .sources import scan
 
 
 def now_iso() -> str:
-    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+    """ISO 8601 con desfase UTC explícito, como pide OKF."""
+    return dt.datetime.now(dt.timezone.utc).replace(microsecond=0).isoformat()
+
+
+RESERVED = {"index.md", "log.md"}
 
 
 def slug(s: str, n: int = 60) -> str:
@@ -27,6 +31,8 @@ def slug(s: str, n: int = 60) -> str:
 def write(path: Path, fields: dict, body: str) -> None:
     """Un concepto OKF: frontmatter (type obligatorio) + cuerpo Markdown."""
     assert "type" in fields, "OKF exige type"
+    if path.name.lower() in RESERVED:   # index.md y log.md están reservados en OKF: un concepto no puede llamarse así
+        path = path.with_name(f"{path.stem}-doc.md")
     path.parent.mkdir(parents=True, exist_ok=True)
     fm = yaml.safe_dump({k: v for k, v in fields.items() if v not in (None, "", [])}, allow_unicode=True, sort_keys=False, width=1000)
     path.write_text(f"---\n{fm}---\n\n{body.strip()}\n", encoding="utf-8")
@@ -67,9 +73,19 @@ def build_indexes(out: Path, sistema: str, modo: str) -> None:
 
 
 def append_log(out: Path, entry: str) -> None:
-    log = out / "log.md"
-    prev = log.read_text(encoding="utf-8") if log.exists() else "# Log\n"
-    log.write_text(prev.rstrip() + f"\n\n## {now_iso()[:10]}: {entry}\n", encoding="utf-8")
+    """log.md según OKF: entradas agrupadas bajo encabezados `## YYYY-MM-DD`, lo más reciente primero."""
+    log, today = out / "log.md", now_iso()[:10]
+    lines = (log.read_text(encoding="utf-8") if log.exists() else "# Log\n").splitlines()
+    if f"## {today}" in lines:   # mismo día: la entrada nueva va la primera bajo su fecha
+        i = lines.index(f"## {today}")
+        lines[i + 1:i + 1] = [f"- {entry}"]
+    else:                        # día nuevo: su bloque va encima de los anteriores
+        i = next((k for k, l in enumerate(lines) if l.startswith("## ")), None)
+        if i is None:
+            lines += [""] if lines[-1] else []
+            i = len(lines)
+        lines[i:i] = [f"## {today}", f"- {entry}", ""]
+    log.write_text("\n".join(lines).rstrip() + "\n", encoding="utf-8")
 
 
 def lint(out: Path) -> list[str]:
